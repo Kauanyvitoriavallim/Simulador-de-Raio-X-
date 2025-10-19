@@ -149,4 +149,24 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Animar objetos (rotacionar para
+            // Animar objetos (rotacionar para visualização)
+            bone.rotation.x += 0.01;
+            bone.rotation.y += 0.01;
+            tissue.rotation.x += 0.01;
+            tissue.rotation.y += 0.01;
+            metal.rotation.x += 0.01;
+            metal.rotation.y += 0.01;
+            water.rotation.x += 0.01;
+            water.rotation.y += 0.01;
+            air.rotation.x += 0.01;
+            air.rotation.y += 0.01;
+
+            controls.update(); // Atualiza os controles de rotação
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
