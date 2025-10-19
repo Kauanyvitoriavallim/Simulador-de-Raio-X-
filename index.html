@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Raio X 3D</title>
     <style>
-        body { margin: 0; }
+        body { margin: 0; overflow: hidden; }
         canvas { display: block; }
         .ui-container {
             position: absolute;
@@ -47,12 +47,17 @@
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
+        
+        // Ajusta o tamanho do renderizador para o tamanho da tela
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        // Define o fundo da cena como preto
+        renderer.setClearColor(0x000000); // Cor do fundo (preto)
+
         // Luzes
         const light = new THREE.PointLight(0xffffff, 1, 100);
-        light.position.set(10, 10, 10);
+        light.position.set(10, 10, 10); // Posição inicial da luz
         scene.add(light);
 
         // Materiais
@@ -90,7 +95,7 @@
         air.position.set(8, 0, 0);
         scene.add(air);
 
-        // Câmera
+        // Posição da câmera
         camera.position.z = 7;
 
         // OrbitControls para rotação da cena
@@ -149,20 +154,10 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Animar objetos (rotacionar para visualização)
-            bone.rotation.x += 0.01;
-            bone.rotation.y += 0.01;
-            tissue.rotation.x += 0.01;
-            tissue.rotation.y += 0.01;
-            metal.rotation.x += 0.01;
-            metal.rotation.y += 0.01;
-            water.rotation.x += 0.01;
-            water.rotation.y += 0.01;
-            air.rotation.x += 0.01;
-            air.rotation.y += 0.01;
+            // Atualiza controles para rotação da cena
+            controls.update();
 
-            controls.update(); // Atualiza os controles de rotação
-
+            // Renderiza a cena
             renderer.render(scene, camera);
         }
 
