@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Raio X 3D</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="container">
+        <div id="simulador">
+            <h1>Simulador de Raio X</h1>
+            <p>Use os controles abaixo para ajustar a intensidade dos raios X e visualizar a simulação.</p>
+            <div id="controles">
+                <label for="intensidade">Intensidade do Raio X:</label>
+                <input type="range" id="intensidade" min="0" max="10" step="0.1" value="5">
+            </div>
+        </div>
+        <div id="scene-container"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.141.0/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
