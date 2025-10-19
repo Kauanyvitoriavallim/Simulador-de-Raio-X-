@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Raio X 3D Corrigido</title>
+    <title>Simulador de Raio X 3D Colorido</title>
     <style>
         /* Estilos CSS FINAIS e Corrigidos */
         
@@ -11,6 +11,7 @@
         body { 
             margin: 0; 
             overflow: hidden; /* Evita barras de rolagem */
+            background-color: #000000; /* Fundo preto */
         }
         
         /* Garante que o canvas do Three.js ocupe toda a tela */
@@ -29,7 +30,8 @@
             color: white;
             border-radius: 8px;
             font-family: Arial, sans-serif; 
-            
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+
             /* CORREÇÃO CRUCIAL: Permite que o mouse interaja com a cena 3D *ATRAVÉS* do div UI */
             pointer-events: none; 
         }
@@ -39,6 +41,7 @@
         .ui-container input, 
         .ui-container p {
             pointer-events: all;
+            color: white; /* Garante que o texto da UI seja branco */
         }
 
         /* Estilos adicionais para os controles */
@@ -76,8 +79,7 @@
         document.body.appendChild(renderer.domElement);
         renderer.setClearColor(0x000000); // Fundo preto
 
-        // Adicionado: Boa prática para objetos transparentes (corpo da resposta anterior)
-        renderer.sortObjects = true; 
+        renderer.sortObjects = true; // Boa prática para transparência
 
         // Câmera e Controles
         camera.position.z = 15;
@@ -92,20 +94,29 @@
         const ambientLight = new THREE.AmbientLight(0x0a0a0a); 
         scene.add(ambientLight);
 
-        // --- Simulação de Materiais (Densidades) ---
+
+        // VVVVVV SEÇÃO JAVASCRIPT CORRIGIDA COM CORES VVVVVV
+        
+        // --- Simulação de Materiais (Densidades e Cores Falsas) ---
         const materialParams = {
-            metal: { color: 0xffffff, opacity: 1.0 }, 
-            bone: { color: 0xcccccc, opacity: 0.9 },  // Corrigido: opacidade ligeiramente menor
-            tissue: { color: 0x666666, opacity: 0.7 }, 
-            water: { color: 0x333333, opacity: 0.5 },  // Corrigido: Cinza escuro
-            air: { color: 0x111111, opacity: 0.1 }   // Corrigido: Quase preto e baixa opacidade
+            // Materiais mais densos = Cores fortes / Opacidade alta
+            metal: { color: 0xff0000, opacity: 1.0 },     // Vermelho Forte
+            bone: { color: 0x0000ff, opacity: 0.9 },      // Azul
+            
+            // Materiais menos densos = Cores suaves / Opacidade média
+            tissue: { color: 0x00ff00, opacity: 0.7 },    // Verde
+            water: { color: 0xffff00, opacity: 0.5 },     // Amarelo
+            
+            // Materiais menos densos (quase invisíveis)
+            air: { color: 0x808080, opacity: 0.1 }        // Cinza (quase transparente)
         };
 
+        // Função utilitária para criar o material
         function createMaterial(type) {
             const params = materialParams[type];
             return new THREE.MeshPhongMaterial({ 
                 color: params.color, 
-                specular: 0x111111,
+                specular: 0x111111, 
                 shininess: 10,
                 transparent: true,
                 opacity: params.opacity
@@ -123,7 +134,7 @@
         const defaultGeometry = new THREE.BoxGeometry(2, 2, 2); 
 
         const metal = new THREE.Mesh(defaultGeometry, metalMaterial);
-        metal.position.set(-6, 0, 0);
+        metal.position.set(-6, 0, 0); 
         scene.add(metal);
 
         const bone = new THREE.Mesh(new THREE.BoxGeometry(2, 4, 2), boneMaterial); 
@@ -139,8 +150,11 @@
         scene.add(water);
 
         const air = new THREE.Mesh(defaultGeometry, airMaterial);
-        air.position.set(10, 0, 0);
+        air.position.set(10, 0, 0); 
         scene.add(air);
+
+        // ^^^^^^ FIM DA SEÇÃO JAVASCRIPT CORRIGIDA COM CORES ^^^^^^
+
 
         // --- Interação da UI (Controles) ---
 
