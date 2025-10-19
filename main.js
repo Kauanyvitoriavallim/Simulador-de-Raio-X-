@@ -1,51 +1,119 @@
-// Variáveis principais
-let scene, camera, renderer, light, sphere;
-let raioXIntensity = 5; // Intensidade inicial do Raio X
+// Cena, câmera e renderizador
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
 
-// Inicializando a cena 3D
-function init() {
-    // Cena e câmera
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight * 0.7);
-    document.getElementById('scene-container').appendChild(renderer.domElement);
+// Ajusta o tamanho do renderizador para o tamanho da tela
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-    // Adicionando luz (simulando a radiação do raio X)
-    light = new THREE.PointLight(0xFFFFFF, 1, 100);
-    light.position.set(50, 50, 50);
-    scene.add(light);
+// Define o fundo da cena como preto
+renderer.setClearColor(0x000000); // Cor do fundo (preto)
 
-    // Adicionando um objeto 3D (por exemplo, uma esfera representando um "órgão")
-    const geometry = new THREE.SphereGeometry(5, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    sphere = new THREE.Mesh(geometry, material);
-    scene.add(sphere);
+// Luzes
+const light = new THREE.PointLight(0xffffff, 1, 100);
+light.position.set(10, 10, 10); // Posição inicial da luz
+scene.add(light);
 
-    // Ajustando a posição da câmera
-    camera.position.z = 20;
+// Materiais
+const boneMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+const tissueMaterial = new THREE.MeshPhongMaterial({ color: 0x98ff98 });
+const metalMaterial = new THREE.MeshPhongMaterial({ color: 0xaaaaaa });
+const waterMaterial = new THREE.MeshPhongMaterial({ color: 0x1e90ff });  // Água (azul)
+const airMaterial = new THREE.MeshPhongMaterial({ color: 0x87cefa });   // Ar (azul claro)
 
-    // Controles de intensidade (alterando a luz)
-    const intensidadeSlider = document.getElementById('intensidade');
-    intensidadeSlider.addEventListener('input', function() {
-        raioXIntensity = parseFloat(intensidadeSlider.value);
-        light.intensity = raioXIntensity / 10;
-    });
+// Geometria dos objetos
+const boneGeometry = new THREE.BoxGeometry(1, 2, 1);
+const tissueGeometry = new THREE.BoxGeometry(1, 1, 1);
+const metalGeometry = new THREE.BoxGeometry(1, 1, 1);
+const waterGeometry = new THREE.BoxGeometry(1, 1, 1);
+const airGeometry = new THREE.BoxGeometry(1, 1, 1);
 
-    // Função de animação
-    animate();
-}
+// Objetos (ossos, tecidos, metal, água e ar)
+const bone = new THREE.Mesh(boneGeometry, boneMaterial);
+bone.position.set(-4, 0, 0);
+scene.add(bone);
+
+const tissue = new THREE.Mesh(tissueGeometry, tissueMaterial);
+tissue.position.set(-1, 0, 0);
+scene.add(tissue);
+
+const metal = new THREE.Mesh(metalGeometry, metalMaterial);
+metal.position.set(2, 0, 0);
+scene.add(metal);
+
+const water = new THREE.Mesh(waterGeometry, waterMaterial);
+water.position.set(5, 0, 0);
+scene.add(water);
+
+const air = new THREE.Mesh(airGeometry, airMaterial);
+air.position.set(8, 0, 0);
+scene.add(air);
+
+// Posição da câmera
+camera.position.z = 7;
+
+// OrbitControls para rotação da cena
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+// Função para atualizar a intensidade da radiação
+const intensitySlider = document.getElementById('intensitySlider');
+intensitySlider.addEventListener('input', function() {
+    const intensity = parseFloat(intensitySlider.value);
+    light.intensity = intensity;
+});
+
+// Função para alterar o material do objeto principal
+const materialSelect = document.getElementById('materialSelect');
+materialSelect.addEventListener('change', function() {
+    const selectedMaterial = materialSelect.value;
+    if (selectedMaterial === 'bone') {
+        tissue.material = boneMaterial;
+        metal.material = boneMaterial;
+        water.material = boneMaterial;
+        air.material = boneMaterial;
+    } else if (selectedMaterial === 'tissue') {
+        tissue.material = tissueMaterial;
+        metal.material = tissueMaterial;
+        water.material = tissueMaterial;
+        air.material = tissueMaterial;
+    } else if (selectedMaterial === 'metal') {
+        tissue.material = metalMaterial;
+        metal.material = metalMaterial;
+        water.material = metalMaterial;
+        air.material = metalMaterial;
+    } else if (selectedMaterial === 'water') {
+        tissue.material = waterMaterial;
+        metal.material = waterMaterial;
+        water.material = waterMaterial;
+        air.material = waterMaterial;
+    } else if (selectedMaterial === 'air') {
+        tissue.material = airMaterial;
+        metal.material = airMaterial;
+        water.material = airMaterial;
+        air.material = airMaterial;
+    }
+});
+
+// Função para ajustar a posição da luz
+const lightX = document.getElementById('lightX');
+const lightY = document.getElementById('lightY');
+lightX.addEventListener('input', function() {
+    light.position.x = parseFloat(lightX.value);
+});
+lightY.addEventListener('input', function() {
+    light.position.y = parseFloat(lightY.value);
+});
 
 // Função de animação
 function animate() {
     requestAnimationFrame(animate);
 
-    // Simulando a rotação para visualização 3D
-    sphere.rotation.x += 0.01;
-    sphere.rotation.y += 0.01;
+    // Atualiza controles para rotação da cena
+    controls.update();
 
+    // Renderiza a cena
     renderer.render(scene, camera);
 }
 
-// Inicializa a cena
-init();
+animate();
