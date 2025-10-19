@@ -5,19 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Raio X 3D Corrigido</title>
     <style>
-        /* Estilos originais */
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
+        /* Estilos CSS FINAIS e Corrigidos */
+        
+        /* Reset Básico */
+        body { 
+            margin: 0; 
+            overflow: hidden; /* Evita barras de rolagem */
+        }
+        
+        /* Garante que o canvas do Three.js ocupe toda a tela */
+        canvas { 
+            display: block; 
+        }
+        
+        /* Container da Interface (UI) */
         .ui-container {
             position: absolute;
             top: 10px;
             left: 10px;
-            z-index: 1;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
+            z-index: 1; /* Fica acima da cena 3D */
+            background: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente */
+            padding: 15px;
             color: white;
-            border-radius: 5px;
-            font-family: Arial, sans-serif; /* Adicionado para melhor visualização */
+            border-radius: 8px;
+            font-family: Arial, sans-serif; 
+            
+            /* CORREÇÃO CRUCIAL: Permite que o mouse interaja com a cena 3D *ATRAVÉS* do div UI */
+            pointer-events: none; 
+        }
+
+        /* Torna APENAS os controles interativos utilizáveis */
+        .ui-container label, 
+        .ui-container input, 
+        .ui-container p {
+            pointer-events: all;
+        }
+
+        /* Estilos adicionais para os controles */
+        input[type="range"] {
+            width: 200px; /* Largura fixa para melhor layout */
+            cursor: pointer;
         }
     </style>
 </head>
@@ -49,45 +76,38 @@
         document.body.appendChild(renderer.domElement);
         renderer.setClearColor(0x000000); // Fundo preto
 
+        // Adicionado: Boa prática para objetos transparentes (corpo da resposta anterior)
+        renderer.sortObjects = true; 
+
         // Câmera e Controles
         camera.position.z = 15;
-        // Corrigido: Usando a THREE.OrbitControls carregada pelo script adicional
         const controls = new THREE.OrbitControls(camera, renderer.domElement); 
 
         // --- Fonte de Raio-X (Luz) ---
-        // A luz simula a fonte de Raio-X. Ponto de luz é um bom proxy.
-        // A cor da luz é branca, mas o Raio-X é preto e branco (tons de cinza).
-        // Usaremos a luz para sombrear os objetos, e a cor dos materiais fará o efeito.
         const light = new THREE.PointLight(0xffffff, 0.5, 100); 
-        light.position.set(5, 5, 5); // Posição inicial da luz
+        light.position.set(5, 5, 5); 
         scene.add(light);
 
-        // Luz ambiente para garantir que os objetos que não são atingidos diretamente pela luz ainda sejam renderizados levemente.
-        const ambientLight = new THREE.AmbientLight(0x0a0a0a); // Luz ambiente muito escura
+        // Luz ambiente muito escura
+        const ambientLight = new THREE.AmbientLight(0x0a0a0a); 
         scene.add(ambientLight);
 
         // --- Simulação de Materiais (Densidades) ---
-        // Na tela de Raio X, cores mais claras significam maior absorção (mais denso).
-        // Cores mais escuras/transparentes significam menor absorção (menos denso).
-        // Usaremos materiais com cores de cinza baseadas na densidade.
-
         const materialParams = {
-            // Materiais mais densos (absorvem mais) = Cor mais clara
-            metal: { color: 0xffffff, opacity: 1.0 }, // Branco (máxima absorção)
-            bone: { color: 0xcccccc, opacity: 1.0 },  // Cinza claro
-            tissue: { color: 0x666666, opacity: 0.8 }, // Cinza médio/escuro
-            water: { color: 0x444444, opacity: 0.6 },  // Cinza escuro
-            air: { color: 0x111111, opacity: 0.4 }   // Quase preto (mínima absorção)
+            metal: { color: 0xffffff, opacity: 1.0 }, 
+            bone: { color: 0xcccccc, opacity: 0.9 },  // Corrigido: opacidade ligeiramente menor
+            tissue: { color: 0x666666, opacity: 0.7 }, 
+            water: { color: 0x333333, opacity: 0.5 },  // Corrigido: Cinza escuro
+            air: { color: 0x111111, opacity: 0.1 }   // Corrigido: Quase preto e baixa opacidade
         };
 
-        // Função utilitária para criar o material
         function createMaterial(type) {
             const params = materialParams[type];
             return new THREE.MeshPhongMaterial({ 
                 color: params.color, 
-                specular: 0x111111, // Brilho especular baixo
+                specular: 0x111111,
                 shininess: 10,
-                transparent: true, // Habilita transparência
+                transparent: true,
                 opacity: params.opacity
             });
         }
@@ -100,40 +120,35 @@
         const airMaterial = createMaterial('air');
 
         // --- Geometrias e Objetos (O "Paciente") ---
-        // Criamos diferentes geometrias/objetos dispostos lado a lado.
         const defaultGeometry = new THREE.BoxGeometry(2, 2, 2); 
 
-        // Objeto 1: Metal (ex: implante ou moeda)
         const metal = new THREE.Mesh(defaultGeometry, metalMaterial);
         metal.position.set(-6, 0, 0);
         scene.add(metal);
 
-        // Objeto 2: Osso
-        const bone = new THREE.Mesh(new THREE.BoxGeometry(2, 4, 2), boneMaterial); // Osso um pouco maior
+        const bone = new THREE.Mesh(new THREE.BoxGeometry(2, 4, 2), boneMaterial); 
         bone.position.set(-2, 0, 0);
         scene.add(bone);
 
-        // Objeto 3: Tecido Moles
         const tissue = new THREE.Mesh(defaultGeometry, tissueMaterial);
         tissue.position.set(2, 0, 0);
         scene.add(tissue);
 
-        // Objeto 4: Água (ex: bexiga cheia)
         const water = new THREE.Mesh(defaultGeometry, waterMaterial);
         water.position.set(6, 0, 0);
         scene.add(water);
 
+        const air = new THREE.Mesh(defaultGeometry, airMaterial);
+        air.position.set(10, 0, 0);
+        scene.add(air);
+
         // --- Interação da UI (Controles) ---
 
-        // Atualiza a Intensidade do Raio-X
         const intensitySlider = document.getElementById('intensitySlider');
         intensitySlider.addEventListener('input', function() {
-            const intensity = parseFloat(intensitySlider.value);
-            // A intensidade da luz afeta o "brilho" da imagem.
-            light.intensity = intensity;
+            light.intensity = parseFloat(intensitySlider.value);
         });
 
-        // Ajusta a Posição da Fonte de Raio-X (Luz)
         const lightX = document.getElementById('lightX');
         const lightY = document.getElementById('lightY');
         
@@ -145,7 +160,6 @@
             light.position.y = parseFloat(lightY.value);
         });
         
-        // Também adicionei um evento para redimensionar a tela
         window.addEventListener('resize', onWindowResize, false);
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -156,11 +170,7 @@
         // --- Animação (Loop de Renderização) ---
         function animate() {
             requestAnimationFrame(animate);
-
-            // Atualiza controles para rotação da cena
             controls.update();
-
-            // Renderiza a cena
             renderer.render(scene, camera);
         }
 
