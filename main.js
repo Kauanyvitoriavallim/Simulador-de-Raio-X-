@@ -1,36 +1,36 @@
-// --- Definição dos Materiais (Densidades para Raio-X) ---
+// --- Definição dos Materiais (Densidades para Raio-X com CORES) ---
 
-// Materiais mais densos (absorvem mais) = Cores mais claras / Opacidade alta
+// Materiais mais densos (absorvem mais) = Cores fortes / Opacidade alta
 const metalMaterial = new THREE.MeshPhongMaterial({ 
-    color: 0xffffff,    // Branco puro (máxima absorção)
+    color: 0xff0000,    // Metal em Vermelho Forte
     transparent: true,
-    opacity: 1.0        // Totalmente opaco
+    opacity: 1.0        // Totalmente opaco (Máxima Densidade)
 });
 
 const boneMaterial = new THREE.MeshPhongMaterial({ 
-    color: 0xcccccc,    // Cinza claro
+    color: 0x0000ff,    // Osso em Azul
     transparent: true,
-    opacity: 0.9 
+    opacity: 0.9        // Alta Densidade
 });
 
-// Materiais menos densos (absorvem menos) = Cores mais escuras / Opacidade baixa
+// Materiais menos densos (absorvem menos) = Cores mais suaves / Opacidade baixa
 const tissueMaterial = new THREE.MeshPhongMaterial({ 
-    color: 0x666666,    // Cinza médio/escuro
+    color: 0x00ff00,    // Tecido em Verde
     transparent: true,
-    opacity: 0.7 
+    opacity: 0.7        // Média Densidade
 });
 
 const waterMaterial = new THREE.MeshPhongMaterial({
-    color: 0x333333,    // Cinza escuro (mais próximo do preto)
+    color: 0xffff00,    // Água em Amarelo
     transparent: true,  
-    opacity: 0.5,        // Simula pouca absorção
+    opacity: 0.5,        // Baixa Densidade
     // removi o 'reflectivity' pois MeshPhongMaterial já lida com reflexão
 });
 
 const airMaterial = new THREE.MeshPhongMaterial({
-    color: 0x111111,    // Quase preto
+    color: 0x808080,    // Ar em Cinza (quase transparente, para contraste)
     transparent: true,  
-    opacity: 0.1         // Mínima absorção (quase invisível)
+    opacity: 0.1         // Mínima Densidade (Quase Invisível)
 });
 
 // --- Geometria e Objetos ---
