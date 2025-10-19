@@ -1,63 +1,56 @@
-/* Resetando margem e padding */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+<style>
+    /* Reset e Configurações Básicas */
+    body { 
+        margin: 0; 
+        overflow: hidden; /* Remove barras de rolagem desnecessárias */
+        background-color: #000000; /* Fundo preto, como em um Raio-X */
+    }
+    
+    /* Garante que o canvas do Three.js ocupe toda a tela */
+    canvas { 
+        display: block; 
+    }
+    
+    /* Container da Interface (UI) */
+    .ui-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1; /* Garante que a UI fique acima da cena 3D */
+        background: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente */
+        padding: 15px;
+        color: white;
+        border-radius: 8px;
+        font-family: Arial, sans-serif;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        
+        /* CORREÇÃO CRUCIAL PARA INTERAÇÃO 3D: */
+        /* Permite que o mouse interaja com a cena 3D *ATRAVÉS* do div UI */
+        pointer-events: none; 
+    }
 
-/* Corpo */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-}
+    /* Torna APENAS os controles interativos utilizáveis */
+    .ui-container label, 
+    .ui-container input, 
+    .ui-container select, 
+    .ui-container p {
+        pointer-events: all;
+        color: white;
+    }
 
-/* Container principal */
-#container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-}
+    /* Estilos para os controles dentro da UI */
+    input[type="range"] {
+        width: 200px; /* Largura fixa para melhor layout */
+        cursor: pointer;
+    }
+    
+    select {
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 4px;
+        background-color: #333;
+        color: white;
+        border: 1px solid #555;
+    }
 
-/* Área do simulador */
-#simulador {
-    text-align: center;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-/* Área da cena */
-#scene-container {
-    width: 100%;
-    height: 70vh;
-}
-
-/* Controles */
-#controles {
-    margin-top: 20px;
-}
-
-/* Títulos */
-h1 {
-    font-size: 2rem;
-    color: #333;
-}
-
-label {
-    font-size: 1rem;
-    color: #333;
-}
-
-input[type="range"] {
-    width: 100%;
-}
+</style>
