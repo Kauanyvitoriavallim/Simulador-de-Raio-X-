@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Raio X 3D</title>
+    <title>Simulador de Raio X 3D Corrigido</title>
     <style>
+        /* Estilos originais */
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
         .ui-container {
@@ -16,141 +17,143 @@
             padding: 10px;
             color: white;
             border-radius: 5px;
+            font-family: Arial, sans-serif; /* Adicionado para melhor visualização */
         }
     </style>
 </head>
 <body>
     <div class="ui-container">
-        <label for="intensitySlider">Intensidade da Radiação</label><br>
+        <label for="intensitySlider">Intensidade do Raio-X</label><br>
         <input type="range" id="intensitySlider" min="0.1" max="1" step="0.1" value="0.5">
         <br><br>
-        <label for="materialSelect">Escolha o Material</label><br>
-        <select id="materialSelect">
-            <option value="bone">Ossos</option>
-            <option value="tissue">Tecidos Moles</option>
-            <option value="metal">Metal</option>
-            <option value="water">Água</option>
-            <option value="air">Ar</option>
-        </select>
+        <p>A densidade dos materiais é fixa para simular um paciente.</p>
+        <p>Metal > Osso > Tecido > Água > Ar</p>
+        <br>
+        <label for="lightX">Posição da Fonte de Raio-X (Eixo X)</label><br>
+        <input type="range" id="lightX" min="-10" max="10" step="0.1" value="5">
         <br><br>
-        <label for="lightX">Posição da Luz (Eixo X)</label><br>
-        <input type="range" id="lightX" min="-10" max="10" step="0.1" value="10">
-        <br><br>
-        <label for="lightY">Posição da Luz (Eixo Y)</label><br>
-        <input type="range" id="lightY" min="-10" max="10" step="0.1" value="10">
+        <label for="lightY">Posição da Fonte de Raio-X (Eixo Y)</label><br>
+        <input type="range" id="lightY" min="-10" max="10" step="0.1" value="5">
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
     <script>
-        // Cena, câmera e renderizador
+        // --- Configuração da Cena ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         
-        // Ajusta o tamanho do renderizador para o tamanho da tela
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
+        renderer.setClearColor(0x000000); // Fundo preto
 
-        // Define o fundo da cena como preto
-        renderer.setClearColor(0x000000); // Cor do fundo (preto)
+        // Câmera e Controles
+        camera.position.z = 15;
+        // Corrigido: Usando a THREE.OrbitControls carregada pelo script adicional
+        const controls = new THREE.OrbitControls(camera, renderer.domElement); 
 
-        // Luzes
-        const light = new THREE.PointLight(0xffffff, 1, 100);
-        light.position.set(10, 10, 10); // Posição inicial da luz
+        // --- Fonte de Raio-X (Luz) ---
+        // A luz simula a fonte de Raio-X. Ponto de luz é um bom proxy.
+        // A cor da luz é branca, mas o Raio-X é preto e branco (tons de cinza).
+        // Usaremos a luz para sombrear os objetos, e a cor dos materiais fará o efeito.
+        const light = new THREE.PointLight(0xffffff, 0.5, 100); 
+        light.position.set(5, 5, 5); // Posição inicial da luz
         scene.add(light);
 
-        // Materiais
-        const boneMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
-        const tissueMaterial = new THREE.MeshPhongMaterial({ color: 0x98ff98 });
-        const metalMaterial = new THREE.MeshPhongMaterial({ color: 0xaaaaaa });
-        const waterMaterial = new THREE.MeshPhongMaterial({ color: 0x1e90ff });  // Água (azul)
-        const airMaterial = new THREE.MeshPhongMaterial({ color: 0x87cefa });   // Ar (azul claro)
+        // Luz ambiente para garantir que os objetos que não são atingidos diretamente pela luz ainda sejam renderizados levemente.
+        const ambientLight = new THREE.AmbientLight(0x0a0a0a); // Luz ambiente muito escura
+        scene.add(ambientLight);
 
-        // Geometria dos objetos
-        const boneGeometry = new THREE.BoxGeometry(1, 2, 1);
-        const tissueGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const metalGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const waterGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const airGeometry = new THREE.BoxGeometry(1, 1, 1);
+        // --- Simulação de Materiais (Densidades) ---
+        // Na tela de Raio X, cores mais claras significam maior absorção (mais denso).
+        // Cores mais escuras/transparentes significam menor absorção (menos denso).
+        // Usaremos materiais com cores de cinza baseadas na densidade.
 
-        // Objetos (ossos, tecidos, metal, água e ar)
-        const bone = new THREE.Mesh(boneGeometry, boneMaterial);
-        bone.position.set(-4, 0, 0);
-        scene.add(bone);
+        const materialParams = {
+            // Materiais mais densos (absorvem mais) = Cor mais clara
+            metal: { color: 0xffffff, opacity: 1.0 }, // Branco (máxima absorção)
+            bone: { color: 0xcccccc, opacity: 1.0 },  // Cinza claro
+            tissue: { color: 0x666666, opacity: 0.8 }, // Cinza médio/escuro
+            water: { color: 0x444444, opacity: 0.6 },  // Cinza escuro
+            air: { color: 0x111111, opacity: 0.4 }   // Quase preto (mínima absorção)
+        };
 
-        const tissue = new THREE.Mesh(tissueGeometry, tissueMaterial);
-        tissue.position.set(-1, 0, 0);
-        scene.add(tissue);
+        // Função utilitária para criar o material
+        function createMaterial(type) {
+            const params = materialParams[type];
+            return new THREE.MeshPhongMaterial({ 
+                color: params.color, 
+                specular: 0x111111, // Brilho especular baixo
+                shininess: 10,
+                transparent: true, // Habilita transparência
+                opacity: params.opacity
+            });
+        }
 
-        const metal = new THREE.Mesh(metalGeometry, metalMaterial);
-        metal.position.set(2, 0, 0);
+        // Criação dos materiais
+        const metalMaterial = createMaterial('metal');
+        const boneMaterial = createMaterial('bone');
+        const tissueMaterial = createMaterial('tissue');
+        const waterMaterial = createMaterial('water');
+        const airMaterial = createMaterial('air');
+
+        // --- Geometrias e Objetos (O "Paciente") ---
+        // Criamos diferentes geometrias/objetos dispostos lado a lado.
+        const defaultGeometry = new THREE.BoxGeometry(2, 2, 2); 
+
+        // Objeto 1: Metal (ex: implante ou moeda)
+        const metal = new THREE.Mesh(defaultGeometry, metalMaterial);
+        metal.position.set(-6, 0, 0);
         scene.add(metal);
 
-        const water = new THREE.Mesh(waterGeometry, waterMaterial);
-        water.position.set(5, 0, 0);
+        // Objeto 2: Osso
+        const bone = new THREE.Mesh(new THREE.BoxGeometry(2, 4, 2), boneMaterial); // Osso um pouco maior
+        bone.position.set(-2, 0, 0);
+        scene.add(bone);
+
+        // Objeto 3: Tecido Moles
+        const tissue = new THREE.Mesh(defaultGeometry, tissueMaterial);
+        tissue.position.set(2, 0, 0);
+        scene.add(tissue);
+
+        // Objeto 4: Água (ex: bexiga cheia)
+        const water = new THREE.Mesh(defaultGeometry, waterMaterial);
+        water.position.set(6, 0, 0);
         scene.add(water);
 
-        const air = new THREE.Mesh(airGeometry, airMaterial);
-        air.position.set(8, 0, 0);
-        scene.add(air);
+        // --- Interação da UI (Controles) ---
 
-        // Posição da câmera
-        camera.position.z = 7;
-
-        // OrbitControls para rotação da cena
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-        // Função para atualizar a intensidade da radiação
+        // Atualiza a Intensidade do Raio-X
         const intensitySlider = document.getElementById('intensitySlider');
         intensitySlider.addEventListener('input', function() {
             const intensity = parseFloat(intensitySlider.value);
+            // A intensidade da luz afeta o "brilho" da imagem.
             light.intensity = intensity;
         });
 
-        // Função para alterar o material do objeto principal
-        const materialSelect = document.getElementById('materialSelect');
-        materialSelect.addEventListener('change', function() {
-            const selectedMaterial = materialSelect.value;
-            if (selectedMaterial === 'bone') {
-                tissue.material = boneMaterial;
-                metal.material = boneMaterial;
-                water.material = boneMaterial;
-                air.material = boneMaterial;
-            } else if (selectedMaterial === 'tissue') {
-                tissue.material = tissueMaterial;
-                metal.material = tissueMaterial;
-                water.material = tissueMaterial;
-                air.material = tissueMaterial;
-            } else if (selectedMaterial === 'metal') {
-                tissue.material = metalMaterial;
-                metal.material = metalMaterial;
-                water.material = metalMaterial;
-                air.material = metalMaterial;
-            } else if (selectedMaterial === 'water') {
-                tissue.material = waterMaterial;
-                metal.material = waterMaterial;
-                water.material = waterMaterial;
-                air.material = waterMaterial;
-            } else if (selectedMaterial === 'air') {
-                tissue.material = airMaterial;
-                metal.material = airMaterial;
-                water.material = airMaterial;
-                air.material = airMaterial;
-            }
-        });
-
-        // Função para ajustar a posição da luz
+        // Ajusta a Posição da Fonte de Raio-X (Luz)
         const lightX = document.getElementById('lightX');
         const lightY = document.getElementById('lightY');
+        
         lightX.addEventListener('input', function() {
             light.position.x = parseFloat(lightX.value);
         });
+        
         lightY.addEventListener('input', function() {
             light.position.y = parseFloat(lightY.value);
         });
+        
+        // Também adicionei um evento para redimensionar a tela
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
 
-        // Função de animação
+        // --- Animação (Loop de Renderização) ---
         function animate() {
             requestAnimationFrame(animate);
 
